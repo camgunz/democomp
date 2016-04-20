@@ -23,6 +23,7 @@ portability and libxdiff to keep demo state dumps small.
 - `democomp` could be faster; some profiling is probably in order.
 - State dumps compress well; it would be useful for `democomp` to support 2-3
   compression formats
+- Read the demo format from a configuration file
 
 ## License
 
