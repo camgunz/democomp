@@ -1,0 +1,526 @@
+Index: configure.ac
+===================================================================
+--- configure.ac	(revision 4493)
++++ configure.ac	(working copy)
+@@ -104,6 +104,8 @@
+ 	;;
+ esac
+ 
++AC_CHECK_LIB(xdiff, xdl_set_allocator)
++
+ dnl - GL
+ AC_ARG_ENABLE(gl,AC_HELP_STRING([--disable-gl],[disable OpenGL rendering code]),,enable_gl="yes")
+ if test "$enable_gl" = "yes"
+Index: src/Makefile.am
+===================================================================
+--- src/Makefile.am	(revision 4493)
++++ src/Makefile.am	(working copy)
+@@ -22,44 +22,172 @@
+ prboom_plus_game_server_LDADD = POSIX/libposixdoom.a SDL/i_network.o @NET_LIBS@ @SDL_LIBS@
+ 
+ COMMON_SRC = \
+- am_map.c       g_game.c           p_maputl.h       r_plane.h   \
+- am_map.h       g_game.h           p_mobj.c         r_demo.c    r_segs.c    \
+- hu_lib.c       lprintf.c          p_mobj.h         r_demo.h    r_segs.h    \
+- hu_lib.h       lprintf.h          p_plats.c        r_sky.c	\
+- d_deh.c        hu_stuff.c         m_argv.c         p_pspr.c    r_sky.h	    \
+- d_deh.h        hu_stuff.h         m_argv.h         p_pspr.h    r_state.h   \
+- d_englsh.h     i_joy.h            m_bbox.c         p_saveg.c   r_things.c  \
+- d_event.h                         m_bbox.h         p_saveg.h   r_things.h  \
+- d_items.c      i_network.h        m_cheat.c        p_setup.c   s_sound.c   \
+- d_items.h      i_sound.h          m_cheat.h        p_setup.h   s_sound.h   \
+- d_main.c       i_system.h         m_fixed.h        p_sight.c   sounds.c    \
+- d_main.h       i_video.h          m_menu.c         p_spec.c    sounds.h    \
+-                info.c             m_menu.h         p_spec.h    st_lib.c    \
+- d_net.h        info.h             m_misc.c         p_switch.c  st_lib.h    \
+- d_player.h                        m_misc.h         p_telept.c  st_stuff.c  \
+- m_random.c     p_tick.c           st_stuff.h       i_main.h    \
+- d_think.h      m_random.h         p_tick.h         tables.c    \
+- d_ticcmd.h     m_swap.h           p_user.c         tables.h     \
+- doomdata.h     p_ceilng.c         p_user.h         v_video.c   \
+- doomdef.c      p_doors.c          protocol.h       v_video.h   \
+- doomdef.h      p_enemy.c          r_bsp.c          version.c   \
+- doomstat.c     p_enemy.h          r_bsp.h          version.h   \
+- doomstat.h     p_floor.c          r_data.c         w_wad.c	\
+- doomtype.h     p_genlin.c         r_data.h         w_wad.h	\
+- dstrings.c     p_inter.c          r_defs.h         wi_stuff.c  \
+- dstrings.h     p_inter.h          r_draw.c         wi_stuff.h  \
+- f_finale.c     p_lights.c         r_draw.h         z_bmalloc.c \
+- f_finale.h     p_map.c            r_main.c         z_bmalloc.h \
+- f_wipe.c       p_map.h            r_main.h         z_zone.c    \
+- f_wipe.h       p_maputl.c         r_plane.c        z_zone.h	\
+- md5.c          md5.h              p_checksum.h     p_checksum.c \
+- r_patch.c      r_patch.h          r_fps.c          r_fps.h \
+- r_filter.c     r_filter.h \
+- e6y.c          e6y.h \
+- i_pcsound.c    i_pcsound.h \
+- g_overflow.c   g_overflow.h       hu_tracers.c     hu_tracers.h \
+- s_advsound.c   s_advsound.h       i_capture.c      i_capture.h \
+- sc_man.c       sc_man.h
++ am_map.c     \
++ am_map.h     \
++ cmp.c        \
++ cmp.h        \
++ d_deh.c      \
++ d_deh.h      \
++ d_dump.c     \
++ d_dump.h     \
++ d_englsh.h   \
++ d_event.h    \
++ d_items.c    \
++ d_items.h    \
++ d_main.c     \
++ d_main.h     \
++ d_net.h      \
++ d_player.h   \
++ d_think.h    \
++ d_ticcmd.h   \
++ doomdata.h   \
++ doomdef.c    \
++ doomdef.h    \
++ doomstat.c   \
++ doomstat.h   \
++ doomtype.h   \
++ dstrings.c   \
++ dstrings.h   \
++ e6y.c        \
++ e6y.h        \
++ f_finale.c   \
++ f_finale.h   \
++ f_wipe.c     \
++ f_wipe.h     \
++ g_game.c     \
++ g_game.h     \
++ g_overflow.c \
++ g_overflow.h \
++ hu_lib.c     \
++ hu_lib.h     \
++ hu_stuff.c   \
++ hu_stuff.h   \
++ hu_tracers.c \
++ hu_tracers.h \
++ i_capture.c  \
++ i_capture.h  \
++ i_joy.h      \
++ i_main.h     \
++ i_network.h  \
++ i_pcsound.c  \
++ i_pcsound.h  \
++ i_sound.h    \
++ i_system.h   \
++ i_video.h    \
++ info.c       \
++ info.h       \
++ lprintf.c    \
++ lprintf.h    \
++ m_argv.c     \
++ m_argv.h     \
++ m_bbox.c     \
++ m_bbox.h     \
++ m_buf.c      \
++ m_buf.h      \
++ m_cheat.c    \
++ m_cheat.h    \
++ m_delta.c    \
++ m_delta.h    \
++ m_fixed.h    \
++ m_menu.c     \
++ m_menu.h     \
++ m_misc.c     \
++ m_misc.h     \
++ m_pbuf.c     \
++ m_pbuf.h     \
++ m_random.c   \
++ m_random.h   \
++ m_swap.h     \
++ md5.c        \
++ md5.h        \
++ p_ceilng.c   \
++ p_checksum.c \
++ p_checksum.h \
++ p_doors.c    \
++ p_enemy.c    \
++ p_enemy.h    \
++ p_floor.c    \
++ p_genlin.c   \
++ p_ident.c    \
++ p_ident.h    \
++ p_inter.c    \
++ p_inter.h    \
++ p_lights.c   \
++ p_map.c      \
++ p_map.h      \
++ p_maputl.c   \
++ p_maputl.h   \
++ p_mobj.c     \
++ p_mobj.h     \
++ p_plats.c    \
++ p_pspr.c     \
++ p_pspr.h     \
++ p_saveg.c    \
++ p_saveg.h    \
++ p_setup.c    \
++ p_setup.h    \
++ p_sight.c    \
++ p_spec.c     \
++ p_spec.h     \
++ p_switch.c   \
++ p_telept.c   \
++ p_tick.c     \
++ p_tick.h     \
++ p_user.c     \
++ p_user.h     \
++ protocol.h   \
++ r_bsp.c      \
++ r_bsp.h      \
++ r_data.c     \
++ r_data.h     \
++ r_defs.h     \
++ r_demo.c     \
++ r_demo.h     \
++ r_draw.c     \
++ r_draw.h     \
++ r_filter.c   \
++ r_filter.h   \
++ r_fps.c      \
++ r_fps.h      \
++ r_main.c     \
++ r_main.h     \
++ r_patch.c    \
++ r_patch.h    \
++ r_plane.c    \
++ r_plane.h    \
++ r_segs.c     \
++ r_segs.h     \
++ r_sky.c      \
++ r_sky.h      \
++ r_state.h    \
++ r_things.c   \
++ r_things.h   \
++ s_advsound.c \
++ s_advsound.h \
++ s_sound.c    \
++ s_sound.h    \
++ sc_man.c     \
++ sc_man.h     \
++ sounds.c     \
++ sounds.h     \
++ st_lib.c     \
++ st_lib.h     \
++ st_stuff.c   \
++ st_stuff.h   \
++ tables.c     \
++ tables.h     \
++ v_video.c    \
++ v_video.h    \
++ version.c    \
++ version.h    \
++ w_wad.c      \
++ w_wad.h      \
++ wi_stuff.c   \
++ wi_stuff.h   \
++ z_bmalloc.c  \
++ z_bmalloc.h  \
++ z_zone.c     \
++ z_zone.h
+ 
+ NET_CLIENT_SRC = d_client.c
+ 
+Index: src/d_main.c
+===================================================================
+--- src/d_main.c	(revision 4493)
++++ src/d_main.c	(working copy)
+@@ -51,13 +51,15 @@
+ #include <sys/stat.h>
+ #include <fcntl.h>
+ 
++#include "z_zone.h"
++#include "doomtype.h"
++
+ #include "doomdef.h"
+-#include "doomtype.h"
+ #include "doomstat.h"
++#include "d_dump.h"
+ #include "d_net.h"
+ #include "dstrings.h"
+ #include "sounds.h"
+-#include "z_zone.h"
+ #include "w_wad.h"
+ #include "s_sound.h"
+ #include "v_video.h"
+@@ -67,6 +69,7 @@
+ #include "m_misc.h"
+ #include "m_menu.h"
+ #include "p_checksum.h"
++#include "p_ident.h"
+ #include "i_main.h"
+ #include "i_system.h"
+ #include "i_sound.h"
+@@ -1857,6 +1860,8 @@
+   lprintf(LO_INFO,"R_Init: Init DOOM refresh daemon - ");
+   R_Init();
+ 
++  P_IdentInit();
++
+   //jff 9/3/98 use logical output routine
+   lprintf(LO_INFO,"\nP_Init: Init Playloop state.\n");
+   P_Init();
+@@ -1966,6 +1971,10 @@
+ 
+   // do not try to interpolate during timedemo
+   M_ChangeUncappedFrameRate();
++
++  if ((p = M_CheckParm("-dumpdemo")) && ++p < myargc) {
++    D_DumpInit(myargv[p]);
++  }
+ }
+ 
+ //
+Index: src/doomdef.h
+===================================================================
+--- src/doomdef.h	(revision 4493)
++++ src/doomdef.h	(working copy)
+@@ -133,6 +133,13 @@
+ // The maximum number of players, multiplayer/networking.
+ #define MAXPLAYERS       4
+ 
++// killough 2/28/98: A ridiculously large number
++// of players, the most you'll ever need in a demo
++// or savegame. This is used to prevent problems, in
++// case more players in a game are supported later.
++
++#define MIN_MAXPLAYERS 32
++
+ // phares 5/14/98:
+ // DOOM Editor Numbers (aka doomednum in mobj_t)
+ 
+Index: src/doomtype.h
+===================================================================
+--- src/doomtype.h	(revision 4493)
++++ src/doomtype.h	(working copy)
+@@ -45,7 +45,22 @@
+ #ifdef __cplusplus
+ typedef bool dboolean;
+ #else
++
++#ifdef true
++#undef true
++#endif
++
++#ifdef false
++#undef false
++#endif
++
++#ifdef bool
++#undef bool
++#endif
++
+ typedef enum {false, true} dboolean;
++
++typedef dboolean bool;
+ #endif
+ typedef unsigned char byte;
+ #endif
+@@ -66,7 +81,7 @@
+  * Except I don't know what to test as it's compiler specific
+  * Proff - I fixed it */
+ #ifndef _MSC_VER
+-typedef signed long long int_64_t;
++typedef long long int_64_t;
+ typedef unsigned long long uint_64_t;
+ // define compiled-specific long-long contstant notation here
+ #define LONGLONG(num)   (uint_64_t)num ## ll
+Index: src/g_game.c
+===================================================================
+--- src/g_game.c	(revision 4493)
++++ src/g_game.c	(working copy)
+@@ -49,7 +49,11 @@
+ #include "config.h"
+ #endif
+ 
++#include "z_zone.h"
++#include "doomtype.h"
++
+ #include "doomstat.h"
++#include "d_dump.h"
+ #include "d_net.h"
+ #include "f_finale.h"
+ #include "m_argv.h"
+@@ -56,6 +60,7 @@
+ #include "m_misc.h"
+ #include "m_menu.h"
+ #include "m_random.h"
++#include "p_ident.h"
+ #include "p_setup.h"
+ #include "p_saveg.h"
+ #include "p_tick.h"
+@@ -840,6 +845,8 @@
+   // died.
+   P_FreeSecNodeList();
+ 
++  P_IdentReset();
++
+   P_SetupLevel (gameepisode, gamemap, 0, gameskill);
+   if (!demoplayback) // Don't switch views if playing a demo
+     displayplayer = consoleplayer;    // view the guy you are playing
+@@ -1220,6 +1227,11 @@
+       AM_Ticker();
+       ST_Ticker ();
+       HU_Ticker ();
++
++      if (D_DumpEnabled()) {
++        D_DumpUpdate();
++      }
++
+       break;
+ 
+     case GS_INTERMISSION:
+@@ -1759,13 +1771,6 @@
+   e6y_G_DoWorldDone();//e6y
+ }
+ 
+-// killough 2/28/98: A ridiculously large number
+-// of players, the most you'll ever need in a demo
+-// or savegame. This is used to prevent problems, in
+-// case more players in a game are supported later.
+-
+-#define MIN_MAXPLAYERS 32
+-
+ extern dboolean setsizeneeded;
+ 
+ //CPhipps - savename variable redundant
+Index: src/p_mobj.c
+===================================================================
+--- src/p_mobj.c	(revision 4493)
++++ src/p_mobj.c	(working copy)
+@@ -31,9 +31,12 @@
+  *
+  *-----------------------------------------------------------------------------*/
+ 
++#include <stdint.h>
++
+ #include "doomdef.h"
+ #include "doomstat.h"
+ #include "m_random.h"
++#include "p_ident.h"
+ #include "r_main.h"
+ #include "p_maputl.h"
+ #include "p_map.h"
+@@ -948,6 +951,9 @@
+   P_AddThinker (&mobj->thinker);
+   if (!((mobj->flags ^ MF_COUNTKILL) & (MF_FRIEND | MF_COUNTKILL)))
+     totallive++;
++
++  P_IdentGetID(mobj, &mobj->id);
++
+   return mobj;
+ }
+ 
+@@ -1011,6 +1017,9 @@
+     P_SetTarget(&mobj->tracer,    NULL);
+     P_SetTarget(&mobj->lastenemy, NULL);
+   }
++
++  P_IdentReleaseID(&mobj->id);
++
+   // free block
+ 
+   P_RemoveThinker (&mobj->thinker);
+Index: src/p_mobj.h
+===================================================================
+--- src/p_mobj.h	(revision 4493)
++++ src/p_mobj.h	(working copy)
+@@ -267,6 +267,8 @@
+     fixed_t             y;
+     fixed_t             z;
+ 
++    unsigned int        id;
++
+     // More list: links in sector (if needed)
+     struct mobj_s*      snext;
+     struct mobj_s**     sprev; // killough 8/10/98: change to ptr-to-ptr
+Index: src/p_saveg.c
+===================================================================
+--- src/p_saveg.c	(revision 4493)
++++ src/p_saveg.c	(working copy)
+@@ -545,21 +545,6 @@
+ //
+ // P_ArchiveSpecials
+ //
+-enum {
+-  tc_ceiling,
+-  tc_door,
+-  tc_floor,
+-  tc_plat,
+-  tc_flash,
+-  tc_strobe,
+-  tc_glow,
+-  tc_elevator,    //jff 2/22/98 new elevator type thinker
+-  tc_scroll,      // killough 3/7/98: new scroll effect thinker
+-  tc_pusher,      // phares 3/22/98:  new push/pull effect thinker
+-  tc_flicker,     // killough 10/4/98
+-  tc_endspecials
+-} specials_e;
+-
+ //
+ // Things to handle:
+ //
+Index: src/p_setup.c
+===================================================================
+--- src/p_setup.c	(revision 4493)
++++ src/p_setup.c	(working copy)
+@@ -1421,6 +1421,7 @@
+       // no need for comp_sound test, these are only used when comp_sound = 0
+       ld->soundorg.x = ld->bbox[BOXLEFT] / 2 + ld->bbox[BOXRIGHT] / 2;
+       ld->soundorg.y = ld->bbox[BOXTOP] / 2 + ld->bbox[BOXBOTTOM] / 2;
++      P_IdentGetID(&ld->soundorg, &ld->soundorg.id);
+ 
+       ld->iLineID=i; // proff 04/05/2000: needed for OpenGL
+       ld->sidenum[0] = LittleShort(mld->sidenum[0]);
+@@ -2160,6 +2161,7 @@
+       sector->soundorg.x = bbox[BOXRIGHT]/2+bbox[BOXLEFT]/2;
+       sector->soundorg.y = bbox[BOXTOP]/2+bbox[BOXBOTTOM]/2;
+     }
++    P_IdentGetID(&sector->soundorg, &sector->soundorg.id);
+ 
+     // adjust bounding box to map blocks
+     block = P_GetSafeBlockY(bbox[BOXTOP]-bmaporgy+MAXRADIUS);
+Index: src/p_spec.h
+===================================================================
+--- src/p_spec.h	(revision 4493)
++++ src/p_spec.h	(working copy)
+@@ -193,6 +193,22 @@
+ #define LockedKindShift            5
+ #define LockedSpeedShift           3
+ 
++enum {
++  tc_ceiling,
++  tc_door,
++  tc_floor,
++  tc_plat,
++  tc_flash,
++  tc_strobe,
++  tc_glow,
++  tc_elevator,    //jff 2/22/98 new elevator type thinker
++  tc_scroll,      // killough 3/7/98: new scroll effect thinker
++  tc_pusher,      // phares 3/22/98:  new push/pull effect thinker
++  tc_flicker,     // killough 10/4/98
++  tc_endspecials
++} specials_e;
++
++
+ //
+ // Animating textures and planes
+ // There is another anim_t used in wi_stuff, unrelated.
+Index: src/r_defs.h
+===================================================================
+--- src/r_defs.h	(revision 4493)
++++ src/r_defs.h	(working copy)
+@@ -88,6 +88,7 @@
+ {
+   thinker_t thinker;  // not used for anything
+   fixed_t x, y, z;
++  unsigned int id;
+ } degenmobj_t;
+ 
+ //

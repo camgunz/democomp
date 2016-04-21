@@ -386,16 +386,16 @@ IF(MINGW)
   TRY_C_COMPILER_FLAG(-mno-ms-bitfields FLAG_C_nomsbitfields)
 ENDIF()
 
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/compsrc)
 
 SET(DEMOCOMP_SOURCES
-  ${CMAKE_SOURCE_DIR}/src/buf.c
-  ${CMAKE_SOURCE_DIR}/src/cmp.c
-  ${CMAKE_SOURCE_DIR}/src/delta.c
-  ${CMAKE_SOURCE_DIR}/src/comp.c
-  ${CMAKE_SOURCE_DIR}/src/main.c
-  ${CMAKE_SOURCE_DIR}/src/pbuf.c
-  ${CMAKE_SOURCE_DIR}/src/utils.c
+  ${CMAKE_SOURCE_DIR}/compsrc/buf.c
+  ${CMAKE_SOURCE_DIR}/compsrc/cmp.c
+  ${CMAKE_SOURCE_DIR}/compsrc/delta.c
+  ${CMAKE_SOURCE_DIR}/compsrc/comp.c
+  ${CMAKE_SOURCE_DIR}/compsrc/main.c
+  ${CMAKE_SOURCE_DIR}/compsrc/pbuf.c
+  ${CMAKE_SOURCE_DIR}/compsrc/utils.c
 )
 
 SET(DEMOCOMP_LIBRARIES "-lm")
