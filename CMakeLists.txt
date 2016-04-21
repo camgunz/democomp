@@ -389,10 +389,10 @@ ENDIF()
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/compsrc)
 
 SET(DEMOCOMP_SOURCES
+  ${CMAKE_SOURCE_DIR}/src/cmp.c
   ${CMAKE_SOURCE_DIR}/compsrc/buf.c
-  ${CMAKE_SOURCE_DIR}/compsrc/cmp.c
-  ${CMAKE_SOURCE_DIR}/compsrc/delta.c
   ${CMAKE_SOURCE_DIR}/compsrc/comp.c
+  ${CMAKE_SOURCE_DIR}/compsrc/delta.c
   ${CMAKE_SOURCE_DIR}/compsrc/main.c
   ${CMAKE_SOURCE_DIR}/compsrc/pbuf.c
   ${CMAKE_SOURCE_DIR}/compsrc/utils.c
