@@ -230,47 +230,48 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
   cmp_read_object(&comp->state_pbuf2.cmp, &obj2);
 
   if (obj1.type != obj2.type) {
-    fprintf(stderr,
-      "%s at gametic %d (byte %lu/%lu) does not have the same type (%s != %s)\n",
+    warn(
+      "%s at gametic %d (byte %lu/%lu) does not have the same type (%s != %s)\n"
+      "Values: %s, %s\n",
       name,
       comp->gametic,
       cursor1,
       cursor2,
       cmp_object_type_to_string(obj1.type),
-      cmp_object_type_to_string(obj2.type)
-    );
-    fprintf(stderr, "Values: %s, %s\n",
+      cmp_object_type_to_string(obj2.type),
       cmp_object_to_string(&obj1),
       cmp_object_to_string(&obj2)
     );
-    die("Exiting on mismatch\n");
+    comp->found_desync = true;
   }
 
   switch (obj1.type) {
     case CMP_TYPE_BOOLEAN:
       if (obj1.as.boolean != obj2.as.boolean) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.boolean ? "true" : "false",
-          obj2.as.boolean ? "true" : "false"
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       break;
     case CMP_TYPE_BIN8:
     case CMP_TYPE_BIN16:
     case CMP_TYPE_BIN32:
       if (obj1.as.bin_size != obj2.as.bin_size) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%u != %u)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.bin_size,
-          obj2.as.bin_size
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       rv = memcmp(
         pbuf_get_data_at_cursor(&comp->state_pbuf1),
@@ -278,49 +279,53 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
         obj1.as.bin_size
       );
       if (rv != 0) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (binary data)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2)
         );
+        comp->found_desync = true;
       }
       pbuf_seek_forward(&comp->state_pbuf1, obj1.as.bin_size);
       pbuf_seek_forward(&comp->state_pbuf2, obj2.as.bin_size);
       break;
     case CMP_TYPE_FLOAT:
       if (obj1.as.flt != obj2.as.flt) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%f != %f)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
-          obj1.as.flt,
-          obj2.as.flt
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       break;
     case CMP_TYPE_DOUBLE:
       if (obj1.as.dbl != obj2.as.dbl) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%f != %f)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.dbl,
-          obj2.as.dbl
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       break;
     case CMP_TYPE_POSITIVE_FIXNUM:
     case CMP_TYPE_UINT8:
       if (obj1.as.u8 != obj2.as.u8) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%u != %u)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.u8,
-          obj2.as.u8
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       if (res) {
         *res = obj1.as.u8;
@@ -328,14 +333,15 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
       break;
     case CMP_TYPE_UINT16:
       if (obj1.as.u16 != obj2.as.u16) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%u != %u)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.u16,
-          obj2.as.u16
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       if (res) {
         *res = obj1.as.u16;
@@ -343,14 +349,15 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
       break;
     case CMP_TYPE_UINT32:
       if (obj1.as.u32 != obj2.as.u32) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%u != %u)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.u32,
-          obj2.as.u32
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       if (res) {
         *res = obj1.as.u32;
@@ -358,27 +365,29 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
       break;
     case CMP_TYPE_UINT64:
       if (obj1.as.u64 != obj2.as.u64) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%" PRIu64 " != %" PRIu64 ")\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.u64,
-          obj2.as.u64
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       break;
     case CMP_TYPE_NEGATIVE_FIXNUM:
     case CMP_TYPE_SINT8:
       if (obj1.as.s8 != obj2.as.s8) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%d != %d)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.s8,
-          obj2.as.s8
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       if (res) {
         *res = obj1.as.s8;
@@ -386,14 +395,15 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
       break;
     case CMP_TYPE_SINT16:
       if (obj1.as.s16 != obj2.as.s16) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%d != %d)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.s16,
-          obj2.as.s16
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       if (res) {
         *res = obj1.as.s16;
@@ -401,14 +411,15 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
       break;
     case CMP_TYPE_SINT32:
       if (obj1.as.s32 != obj2.as.s32) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%d != %d)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.s32,
-          obj2.as.s32
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       if (res) {
         *res = obj1.as.s32;
@@ -416,14 +427,15 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
       break;
     case CMP_TYPE_SINT64:
       if (obj1.as.s64 != obj2.as.s64) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%" PRId64 " != %" PRId64 ")\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.s64,
-          obj2.as.s64
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       break;
     case CMP_TYPE_FIXSTR:
@@ -431,14 +443,15 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
     case CMP_TYPE_STR16:
     case CMP_TYPE_STR32:
       if (obj1.as.str_size != obj2.as.str_size) {
-        die("%s at gametic %d (byte %lu/%lu) does not match (%u != %u)\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic,
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          obj1.as.str_size,
-          obj2.as.str_size
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       rv = strncmp(
         pbuf_get_data_at_cursor(&comp->state_pbuf1),
@@ -446,14 +459,15 @@ void compare_next_object(comp_ctx_t *comp, const char *name, int *res) {
         obj1.as.str_size
       );
       if (rv != 0) {
-        die("%s at gametic %d (byte %lu/%lu) does not match ([%s] != [%s])\n",
+        warn("%s at gametic %d (byte %lu/%lu) does not match (%s != %s)\n",
           name,
           comp->gametic, 
           pbuf_get_cursor(&comp->state_pbuf1),
           pbuf_get_cursor(&comp->state_pbuf2),
-          pbuf_get_data_at_cursor(&comp->state_pbuf1),
-          pbuf_get_data_at_cursor(&comp->state_pbuf2)
+          cmp_object_to_string(&obj1),
+          cmp_object_to_string(&obj2)
         );
+        comp->found_desync = true;
       }
       pbuf_seek_forward(&comp->state_pbuf1, obj1.as.str_size);
       pbuf_seek_forward(&comp->state_pbuf2, obj2.as.str_size);

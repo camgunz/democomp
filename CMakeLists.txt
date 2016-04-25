@@ -395,6 +395,7 @@ SET(DEMOCOMP_SOURCES
   ${CMAKE_SOURCE_DIR}/src/comp.c
   ${CMAKE_SOURCE_DIR}/src/main.c
   ${CMAKE_SOURCE_DIR}/src/pbuf.c
+  ${CMAKE_SOURCE_DIR}/src/sha256.c
   ${CMAKE_SOURCE_DIR}/src/utils.c
 )
 

@@ -30,6 +30,7 @@
 #include "delta.h"
 
 #include "comp.h"
+#include "sha256.h"
 
 int main(int argc, char **argv) {
   FILE       *dump_fobj1;
@@ -37,7 +38,7 @@ int main(int argc, char **argv) {
   long        dump_file_size1;
   long        dump_file_size2;
   int         rv;
-  comp_ctx_t  comp;
+  comp_ctx_t  comp = { 0 };
 
   if (argc != 3) {
     fprintf(stderr, "\nUsage: %s [dump file 1] [dump file 2]\n\n", argv[0]);
@@ -76,6 +77,14 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
+  /*
+   * Check size
+   *   - Match:
+   *     - Check hash
+   *       - Match:
+   *         - return EXIT_SUCCESS
+   */
+
   pbuf_init_with_capacity(&comp.dump_pbuf1, dump_file_size1);
   pbuf_init_with_capacity(&comp.dump_pbuf2, dump_file_size2);
 
@@ -98,6 +107,31 @@ int main(int argc, char **argv) {
 
   comp.dump_pbuf2.buf.size = dump_file_size2;
 
+  if (dump_file_size1 == dump_file_size2) {
+    mbedtls_sha256_context sha2561;
+    mbedtls_sha256_context sha2562;
+    unsigned char output1[32];
+    unsigned char output2[32];
+
+    mbedtls_sha256_init(&sha2561);
+    mbedtls_sha256_starts(&sha2561, 0);
+    mbedtls_sha256_update(&sha2561,
+                          (unsigned char *)pbuf_get_data(&comp.dump_pbuf1),
+                          pbuf_get_size(&comp.dump_pbuf1));
+    mbedtls_sha256_finish(&sha2561, output1);
+
+    mbedtls_sha256_init(&sha2562);
+    mbedtls_sha256_starts(&sha2562, 0);
+    mbedtls_sha256_update(&sha2562,
+                          (unsigned char *)pbuf_get_data(&comp.dump_pbuf2),
+                          pbuf_get_size(&comp.dump_pbuf2));
+    mbedtls_sha256_finish(&sha2562, output2);
+
+    if (memcmp(output1, output2, 32) == 0) {
+      return EXIT_SUCCESS;
+    }
+  }
+
   delta_init();
 
   comp.states_read = 0;
@@ -107,7 +141,15 @@ int main(int argc, char **argv) {
   buf_init(&comp.delta_buf);
   buf_init(&comp.name_buf);
 
-  while (!comp_eof(&comp)) {
+  while (true) {
+    if (comp_eof(&comp)) {
+      break;
+    }
+
+    if (comp.found_desync) {
+      return EXIT_FAILURE;
+    }
+
     comp_load_next_states(&comp);
     comp_compare(&comp);
   }

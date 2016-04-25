@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+void warn(const char *fmt, ...);
 void die(const char *fmt, ...);
 
 #endif

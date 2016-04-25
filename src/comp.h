@@ -39,6 +39,7 @@ typedef struct {
   int numprclass;
   int markpointnum;
   int playeringame[MAXPLAYERS];
+  bool found_desync;
 } comp_ctx_t;
 
 void comp_load_first_states(comp_ctx_t *comp);
