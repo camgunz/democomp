@@ -489,9 +489,6 @@ void comp_clear(comp_ctx_t *comp) {
   }
 }
 
-void comp_load_first_states(comp_ctx_t *comp) {
-}
-
 void comp_load_next_states(comp_ctx_t *comp) {
   uint32_t size1;
   uint32_t size2;
