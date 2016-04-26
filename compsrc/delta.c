@@ -124,7 +124,6 @@ bool delta_apply(pbuf_t *b1, pbuf_t *b2, buf_t *delta) {
   buf_t delta_copy;
   int xdiff_res;
   bool res = false;
-  uint32_t i;
 
   ecb.priv = b2;
   ecb.outf = write_to_buffer;

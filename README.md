@@ -16,7 +16,10 @@ information for locating the source of the desync.
 ## Design
 
 `democomp` and the state dump format use MessagePack to ensure binary format
-portability and libxdiff to keep demo state dumps small.
+portability and libxdiff to keep demo state dumps small.  `democomp` will
+compare file sizes and SHA-256 hashes in order to detect matching demos without
+the in-depth comparison, greatly improving scan time (useful for automated
+checking).
 
 ## Future Plans
 
@@ -29,5 +32,6 @@ portability and libxdiff to keep demo state dumps small.
 
 `democomp` uses code from D2K and PrBoom+, and as such is licensed under the
 terms of the GNU General Public License v2.0, or, at your option, any later
-version of the license.
+version of the license.  The SHA-256 code is from the mbed-tls project,
+licensed through the Apache License, Version 2.0.
 
