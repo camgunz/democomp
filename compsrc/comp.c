@@ -188,13 +188,13 @@ const char* cmp_object_to_string(cmp_object_t *obj) {
       buf_sprintf(&str, "u64 [%" PRIu64 "]", obj->as.u64);
       break;
     case CMP_TYPE_SINT8:
-      buf_sprintf(&str, "s8 [%u]", obj->as.s8);
+      buf_sprintf(&str, "s8 [%d]", obj->as.s8);
       break;
     case CMP_TYPE_SINT16:
-      buf_sprintf(&str, "s16 [%u]", obj->as.s16);
+      buf_sprintf(&str, "s16 [%d]", obj->as.s16);
       break;
     case CMP_TYPE_SINT32:
-      buf_sprintf(&str, "s32 [%u]", obj->as.s32);
+      buf_sprintf(&str, "s32 [%d]", obj->as.s32);
       break;
     case CMP_TYPE_SINT64:
       buf_sprintf(&str, "s64 [%" PRId64 "]", obj->as.s64);
@@ -568,8 +568,9 @@ void comp_load_next_states(comp_ctx_t *comp) {
 
 void comp_compare(comp_ctx_t *comp) {
   int s = 0;
-  int tc;
-  int version;
+  int num_deathmatchstarts = 0;
+  int tc = 0;
+  int version = 0;
 
   /** Config **/
 
@@ -648,6 +649,24 @@ void comp_compare(comp_ctx_t *comp) {
   compare("leveltime");
   compare("totalleveltimes");
   compare("basetic");
+
+  for (int i = 0; i < MAXPLAYERS; i++) {
+    iter_compare("playerstarts[i].x", i);
+    iter_compare("playerstarts[i].y", i);
+    iter_compare("playerstarts[i].angle", i);
+    iter_compare("playerstarts[i].type", i);
+    iter_compare("playerstarts[i].options", i);
+  }
+
+  read_compare("num_deathmatchstarts", &num_deathmatchstarts);
+
+  for (int i = 0; i < num_deathmatchstarts; i++) {
+    iter_compare("deathmatchstarts[i].x", i);
+    iter_compare("deathmatchstarts[i].y", i);
+    iter_compare("deathmatchstarts[i].angle", i);
+    iter_compare("deathmatchstarts[i].type", i);
+    iter_compare("deathmatchstarts[i].options", i);
+  }
 
   /** RNG **/
 
